@@ -1,32 +1,44 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: MIT 
+pragma solidity ^0.8.0; 
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.3/contracts/token/ERC20/ERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.3/contracts/token/ERC20/ERC20.sol"; 
 
-contract GameToken is ERC20 {
-    address private owner;
-    
-    constructor() ERC20("Game Token", "GT") {
-        owner = msg.sender;
-    }
-    
-    function mint(address to, uint256 amount) public {
-        require(msg.sender == owner, "Only owner can mint tokens");
-        _mint(to, amount);
-    }
-    
-    function transfer(address to, uint256 amount) public virtual override returns (bool) {
+contract GameToken is ERC20 { 
+    address private owner; 
+     
+    constructor() ERC20("Game Token", "GT") { 
+        owner = msg.sender; 
+    } 
+     
+    function mint(address to, uint256 amount) public { 
+        require(msg.sender == owner, "Only owner can mint tokens"); 
+        _mint(to, amount); 
+    } 
+     
+    function transfer(address to, uint256 amount) public virtual override returns (bool) { 
+        require(amount <= balanceOf(msg.sender), "Not enough balance"); 
+        _transfer(_msgSender(), to, amount); 
+        return true; 
+    } 
+     
+    function redeem(uint256 amount, uint256 gameOption) public { 
         require(amount <= balanceOf(msg.sender), "Not enough balance");
-        _transfer(_msgSender(), to, amount);
-        return true;
-    }
-    
-    function redeem(uint256 amount) public {
-        require(amount <= balanceOf(msg.sender), "Not enough balance");
-        _burn(msg.sender, amount);
-    }
-    
-    function burn(uint256 amount) public {
-        _burn(msg.sender, amount);
-    }
+
+        if (gameOption == 1) {
+            require(amount >= 50 * 1 ** decimals(), "Insufficient tokens for Game Option 1");
+            _burn(msg.sender, amount);
+        } else if (gameOption == 2) {
+            require(amount >= 100 * 1 ** decimals(), "Insufficient tokens for Game Option 2");
+            _burn(msg.sender, amount);
+        } else if (gameOption == 3) {
+            require(msg.sender == owner, "Only owner can redeem for Game Option 3");
+            _burn(msg.sender, amount);
+        } else {
+            revert("Invalid game option");
+        }
+    } 
+     
+    function burn(uint256 amount) public { 
+        _burn(msg.sender, amount); 
+    } 
 }
